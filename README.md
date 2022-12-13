@@ -43,3 +43,23 @@ Tasks na ordem correta
 - UI
 - CLI
 - Rest API
+
+### Comandos úteis
+executar o bash em um container
+`$ docker exec -it e23c9fd919ac /bin/bash`
+
+no airflow
+```
+airflow db init
+airflow db up
+airflow db reset (remove tudo do db)
+airflow webserver
+airflow scheduler
+airflow celery worker
+airflow dags pause ou unpause (semelhante ao botão da UI)
+airflow dags trigger
+airflow dags list
+airflow dags list <nome>
+airflow tasks test (executar um teste em task específica)
+airflow dags backfill -s[start] -e[end] <nome/id da dag>(rerun as dags que não foram pausadas) 
+``` 
