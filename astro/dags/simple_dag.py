@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.sensors.filesystem import FileSensor
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.models.baseoperator import chain, cross_downstream
 
 from datetime import datetime, timedelta
 
@@ -13,9 +14,19 @@ default_args = {
     'retry_delay' : timedelta(minutes=5) } 
 
 
-def _download_data(**kwargs):
-    with open('/tmp/myfile.txt') as f:
-        f.write('myfile')
+def _download_data(ti, **kwargs):
+    with open('/tmp/myfile.txt','w') as f:
+        f.write('myfile.txt')
+    ti.xcom_push(key='my_key', value=30)
+
+def _checking_data(ti):
+    my_xcom = ti.xcom_pull(key='my_key', task_ids=['download_data'])
+
+
+def _failure_msg(context):
+    print('On callback failure')
+    print(context)
+
 
 with DAG(dag_id='simple_dag', schedule_interval = None, 
     default_args = default_args,
@@ -35,7 +46,8 @@ with DAG(dag_id='simple_dag', schedule_interval = None,
 
     processing_data = BashOperator(
         task_id="processing_data",
-        bash_command='exit 0'
+        bash_command='exit 0',
+        on_failure_callback=_failure_msg
     )
         
 downloading_data >> wait_for_data >> processing_data

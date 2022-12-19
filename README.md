@@ -163,3 +163,57 @@ X >> [Y, Z] = Eecute X antes de Y e Z
 - Cross_downstream
   - cross_downstream([X,Y], [Z,K])\
 Não é possível usar [X,Y] >> [Z,K]
+
+
+### Compartilhando dados entre tasks
+- Temos limitações: ``` XCOM ``` -> Cross Comunication
+
+Podemos usar o `return` ou `ti.xcom_push`
+
+Sendo ti = task instance object 
+
+Admin -> XCOMs -> Chave, Valor, Data, Task Id e Dag ID
+
+Method xcom_pull
+exemplo:
+```def _checking_data(ti):
+    my_xcom = ti.xcom_pull(key='return_value', task_ids=['download_data'])
+```
+
+xcom são limitados em tamanho já que são armazenados no airflow usando sqlite podemos armazenar até 2gb em 1 xcom. Não é uma boa prática armazenar dados aqui, melhor usar para armazenar estados, pequenos dados.
+
+### Falhas
+Podemos similuar falhas com o operador bash.
+Usando a UI podemos selecionar várias dags com o mesmo estado em caso de falha, por exemplo up_for_retry.
+
+Browser -> Tasks Instance -> Filtros -> Selecionar todas -> Actions -> Clear 
+Isso faz com que todas as tasks selecionadas sejam executadas novamente.
+
+
+Args:
+email_on_failure: True | False
+email_on_retry: True | False
+email: 'xxxxx@xxxx.com
+on_failure_callback= código para usar em caso de falha
+
+## Executores
+- Sequential executor\
+São executados em sequência: util para debugar ou experimentar
+
+- Tasks em paralelo\
+parallelism: define o número de máximo de tasks executados em paralelo na instancia toda do airflow. (default = 32)
+
+dag_concurrency: número de tasks em uma dag que pode ser executadas em paralelo nas DAG Runs (default = 16)
+
+max_active_runs_per_dag: número máximo de dag runs que podem ser rodadas ao mesmo tempo em uma determinada dag (default = 16)
+
+parametro para uma dag: max_active_runs
+concurrency: limita o número de tasks executadas em paralelo em uma dag específica.
+
+### Escalando
+- Celery Executor
+  - distributed task queue
+  - distribui as tasks entre várias maquinas
+Todas máquinas devem ter os mesmos pacotes e ambientes.
+
+- Kubernetes
